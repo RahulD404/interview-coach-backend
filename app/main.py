@@ -1,7 +1,6 @@
 from fastapi import FastAPI
+from app.api.llm import router as llm_router
 
-app = FastAPI(title="InterviewIQ Backend")
+app = FastAPI()
 
-@app.get("/")
-def root():
-    return {"message": "Backend is running"}
+app.include_router(llm_router)
