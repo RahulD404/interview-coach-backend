@@ -1,5 +1,30 @@
-venv310/
-venv/
+# Python cache
 __pycache__/
 *.pyc
-.env
+*.pyo
+
+# Virtual environment
+audio_env/
+venv/
+env/
+
+# Data files (VERY IMPORTANT)
+app/modules/audio/data/raw_audio/
+app/modules/audio/data/transcripts/
+
+# Large input files
+app/modules/audio/data/input_video/
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# HuggingFace cache (optional)
+.cache/app/modules/audio/audio_env/
