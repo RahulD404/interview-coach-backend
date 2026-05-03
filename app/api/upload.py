@@ -1,3 +1,4 @@
+print("🔥 Upload endpoint hit")
 from fastapi import APIRouter, UploadFile, File, Depends, Query
 from sqlalchemy.orm import Session
 import shutil, os
@@ -8,7 +9,7 @@ from app.db.models import Session as DBSession, Response, Question
 from app.utils.ffmpeg_utils import extract_audio
 from app.modules.video.video_service import process_video
 
-from app.services.audio_service import AudioService
+from app.modules.audio.audio_service import AudioService
 from app.modules.audio.semantic_mapper import map_audio_to_semantics
 
 from app.services.llm_service import evaluate_answer
@@ -24,9 +25,10 @@ audio_service = AudioService()
 @router.post("/upload")
 async def upload_video(
     file: UploadFile = File(...),
-    question_id: int = Query(...),  # 👈 IMPORTANT (comes from frontend)
+    question_id: int = Query(...), 
     db: Session = Depends(get_db)
 ):
+    print("🔥 STEP 1: endpoint hit")
     # -----------------------------
     # 1. Save uploaded video
     # -----------------------------
