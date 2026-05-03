@@ -1,6 +1,9 @@
 import numpy as np
-from deepface import DeepFace
 
+
+# -----------------------------
+# RAW METRICS
+# -----------------------------
 
 def compute_face_presence(landmarks_list):
     total = len(landmarks_list)
@@ -35,28 +38,40 @@ def compute_gaze_proxy(landmarks_list):
     return float(np.mean(values)) if values else 0
 
 
-# 🔥 DeepFace emotion aggregation
-def compute_emotion_distribution(frames):
-    emotions = []
+# -----------------------------
+# SEMANTIC MAPPING (KEY PART)
+# -----------------------------
 
-    for frame in frames:
-        try:
-            result = DeepFace.analyze(
-                frame,
-                actions=["emotion"],
-                enforce_detection=False
-            )
-            emotions.append(result[0]["dominant_emotion"])
-        except:
-            continue
-
-    if not emotions:
-        return {"dominant": "neutral", "consistency": 0}
-
-    dominant = max(set(emotions), key=emotions.count)
-    consistency = emotions.count(dominant) / len(emotions)
-
+def map_video_to_semantics(face_presence, head_movement, gaze):
     return {
-        "dominant": dominant,
-        "consistency": consistency
+        "face_visibility": describe_face(face_presence),
+        "stability": describe_movement(head_movement),
+        "eye_contact": describe_gaze(gaze)
     }
+
+
+def describe_face(val):
+    if val > 0.8:
+        return "face consistently visible"
+    elif val > 0.5:
+        return "face partially visible"
+    else:
+        return "face often not visible"
+
+
+def describe_movement(val):
+    if val < 0.001:
+        return "very stable posture"
+    elif val < 0.01:
+        return "moderate movement"
+    else:
+        return "excessive movement"
+
+
+def describe_gaze(val):
+    if val < 0.02:
+        return "good eye alignment (likely maintaining eye contact)"
+    elif val < 0.05:
+        return "moderate eye alignment"
+    else:
+        return "poor eye alignment (likely looking away frequently)"

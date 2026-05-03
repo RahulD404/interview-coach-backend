@@ -16,7 +16,7 @@ DEVICE = os.getenv("DEVICE", "cpu")
 if DEVICE == "cuda" and not torch.cuda.is_available():
     DEVICE = "cpu"
 
-FFMPEG_PATH = r"C:\Users\Lenovo\Downloads\ffmpeg-8.0.1-full_build\ffmpeg-8.0.1-full_build\bin\ffmpeg.exe"
+FFMPEG_PATH = r"C:\Users\Rahul\Downloads\ffmpeg-2026-04-30-git-cc3ca17127-essentials_build\ffmpeg-2026-04-30-git-cc3ca17127-essentials_build\bin"
 # ========================
 # MODEL CONFIG
 # ========================

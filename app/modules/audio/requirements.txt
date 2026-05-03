@@ -17,7 +17,7 @@ torchaudio==2.2.2
 transformers==4.41.2
 
 # VAD (optional but recommended)
-webrtcvad==2.0.10
+# webrtcvad==2.0.10
 
 # Utils
 tqdm==4.66.4
