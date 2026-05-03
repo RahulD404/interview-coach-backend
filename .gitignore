@@ -6,6 +6,7 @@ __pycache__/
 # Virtual environment
 audio_env/
 venv/
+venv310/
 env/
 
 # Data files (VERY IMPORTANT)
