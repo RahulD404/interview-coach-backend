@@ -16,7 +16,7 @@ DEVICE = os.getenv("DEVICE", "cpu")
 if DEVICE == "cuda" and not torch.cuda.is_available():
     DEVICE = "cpu"
 
-FFMPEG_PATH = r"C:\Users\Rahul\Downloads\ffmpeg-2026-04-30-git-cc3ca17127-essentials_build\ffmpeg-2026-04-30-git-cc3ca17127-essentials_build\bin"
+FFMPEG_PATH = r"C:\ffmpeg\bin\ffmpeg.exe"
 # ========================
 # MODEL CONFIG
 # ========================
@@ -37,9 +37,9 @@ TARGET_SAMPLE_RATE = 16000
 # PATH CONFIG
 # ========================
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+DATA_DIR = os.path.join(PROJECT_ROOT, "data")
 
-DATA_DIR = os.path.join(BASE_DIR, "data")
 RAW_AUDIO_DIR = os.path.join(DATA_DIR, "raw_audio")
 TRANSCRIPTS_DIR = os.path.join(DATA_DIR, "transcripts")
 
