@@ -1,7 +1,7 @@
 # tests/test_audio_service.py
 
 import os
-from app.modules.audio.audio_service import AudioService
+from app.modules.audio.audio_pipeline import AudioService
 
 
 def test_audio_service():

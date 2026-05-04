@@ -1,4 +1,4 @@
-# app/services/audio_service.py
+# app/services/audio_pipeline.py
 
 from app.modules.audio.extractor import AudioExtractor
 from app.modules.audio.timing import TimingAnalyzer
@@ -7,7 +7,7 @@ from app.modules.audio.emotion import EmotionAnalyzer
 from app.modules.audio.aggregator import AudioAggregator
 
 
-class AudioService:
+class AudioPipeline:
     def __init__(self):
         self.extractor = AudioExtractor()
         self.timing = TimingAnalyzer()

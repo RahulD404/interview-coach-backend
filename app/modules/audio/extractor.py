@@ -7,73 +7,76 @@ import uuid
 import subprocess
 import soundfile as sf
 from faster_whisper import WhisperModel
-from app.modules.audio.config import RAW_AUDIO_DIR
-from app.modules.audio.config import TRANSCRIPTS_DIR
-
 
 from app.modules.audio.config import (
     DEVICE,
     WHISPER_MODEL_SIZE,
     TARGET_SAMPLE_RATE,
     FFMPEG_PATH,
+    RAW_AUDIO_DIR,
+    TRANSCRIPTS_DIR,
 )
 
 
 class AudioExtractor:
     def __init__(self):
-        """
-        Initialize Whisper model once.
-        """
+        print("🔄 Loading Whisper model...")
         self.model = WhisperModel(
             WHISPER_MODEL_SIZE,
             device=DEVICE,
             compute_type="int8" if DEVICE == "cpu" else "float16",
         )
+        print("✅ Whisper loaded")
 
     # =========================
     # 1. INPUT HANDLER
     # =========================
 
     def process_input(self, input_path: str) -> str:
-        """
-        Detect input type and ensure we return an audio file path.
-        """
         if input_path.endswith((".mp4", ".mov", ".mkv")):
             return self._extract_audio(input_path)
         return input_path
 
     # =========================
-    # 2. VIDEO → AUDIO
+    # 2. VIDEO → AUDIO (FIXED)
     # =========================
 
     def _extract_audio(self, video_path: str) -> str:
-        """
-        Extract audio using FFmpeg.
-        """
         os.makedirs(RAW_AUDIO_DIR, exist_ok=True)
 
         file_id = str(uuid.uuid4())[:8]
-
         temp_audio_path = os.path.join(RAW_AUDIO_DIR, f"audio_{file_id}.wav")
 
         command = [
             FFMPEG_PATH,
             "-y",
-            "-i",
-            video_path,
+            "-i", video_path,
             "-vn",
-            "-ac",
-            "1",
-            "-ar",
-            str(TARGET_SAMPLE_RATE),
-            "-f",
-            "wav",
+            "-ac", "1",
+            "-ar", str(TARGET_SAMPLE_RATE),
+            "-f", "wav",
             temp_audio_path,
         ]
 
-        subprocess.run(
-            command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True
+        print("\n🚀 [Extractor] Running FFmpeg:")
+        print(" ".join(command))
+
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            text=True
         )
+
+        print("📤 FFmpeg STDOUT:", result.stdout[:200])
+        print("⚠️ FFmpeg STDERR:", result.stderr[:500])
+
+        if result.returncode != 0:
+            raise Exception(f"❌ FFmpeg failed:\n{result.stderr}")
+
+        if not os.path.exists(temp_audio_path):
+            raise Exception("❌ Audio file not created")
+
+        print("✅ [Extractor] Audio extracted:", temp_audio_path)
 
         return temp_audio_path
 
@@ -94,11 +97,10 @@ class AudioExtractor:
     # =========================
 
     def transcribe(self, input_path: str):
-        """
-        Full pipeline: video/audio → transcript
-        """
-        file_id = str(uuid.uuid4())[:8]
+        print("\n➡️ [Extractor] Starting transcription:", input_path)
+
         start_time = time.time()
+        file_id = str(uuid.uuid4())[:8]
 
         # Step 1: Normalize input
         audio_path = self.process_input(input_path)
@@ -106,8 +108,14 @@ class AudioExtractor:
         # Step 2: Load audio
         audio, sr = self.load_audio(audio_path)
 
+        print("➡️ [Extractor] Running Whisper...")
+
         # Step 3: ASR
-        segments, info = self.model.transcribe(audio, beam_size=5, word_timestamps=True)
+        segments, info = self.model.transcribe(
+            audio,
+            beam_size=5,
+            word_timestamps=True
+        )
 
         transcript = ""
         all_segments = []
@@ -124,9 +132,11 @@ class AudioExtractor:
 
             if segment.words:
                 for word in segment.words:
-                    segment_data["words"].append(
-                        {"word": word.word, "start": word.start, "end": word.end}
-                    )
+                    segment_data["words"].append({
+                        "word": word.word,
+                        "start": word.start,
+                        "end": word.end
+                    })
 
             all_segments.append(segment_data)
 
@@ -134,7 +144,10 @@ class AudioExtractor:
 
         os.makedirs(TRANSCRIPTS_DIR, exist_ok=True)
 
-        transcript_file = os.path.join(TRANSCRIPTS_DIR, f"transcript_{file_id}.json")
+        transcript_file = os.path.join(
+            TRANSCRIPTS_DIR,
+            f"transcript_{file_id}.json"
+        )
 
         with open(transcript_file, "w", encoding="utf-8") as f:
             json.dump(
@@ -142,6 +155,9 @@ class AudioExtractor:
                 f,
                 indent=2,
             )
+
+        print(f"✅ [Extractor] Done in {total_time}s")
+
         return {
             "transcript": transcript.strip(),
             "segments": all_segments,
